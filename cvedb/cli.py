@@ -76,6 +76,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.update:
         with CVEdb.open(args.database) as db:
             db.reload(force=True)
+        # an update on its own is a terminal action: only fall through to a
+        # query when the user also passed a query-forming flag or another
+        # output action (see issue #10)
+        if not (args.SEARCH_TERM or args.after or args.before or args.modified_after or args.modified_before
+                or args.vendor != Logical.ANY or args.software_version != Logical.ANY
+                or args.version or args.data_version):
+            return 0
 
     if args.version:
         if sys.stdout.isatty():
@@ -174,3 +181,4 @@ def main(argv: Optional[List[str]] = None) -> int:
                 )
     except (KeyboardInterrupt, BrokenPipeError):
         return 1
+    return 0
